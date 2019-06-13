@@ -86,7 +86,17 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
 
         jData, _ := json.Marshal(responseJSON)
         w.Write(jData)
-    }  
+    } else {
+
+      response := "Please enter a valid query"
+      responseJSON := jsonResponse {
+                Message: "Invalid Input",
+                Result: response,
+            }
+
+        jData, _ := json.Marshal(responseJSON)
+        w.Write(jData)
+    }
 } 
 
 
