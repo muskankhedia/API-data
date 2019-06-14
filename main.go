@@ -3,6 +3,8 @@ import (
   "net/http"
   "strings"
   "encoding/json"
+  "os"
+  "log"
 )
 
 type jsonResponseQuery struct {
@@ -48,12 +50,18 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
     }
 } 
 
-
-
 func main() {
-  http.HandleFunc("/", fetchData)
-  if err := http.ListenAndServe(":8080", nil); err != nil {
+
+  http.HandleFunc("/fetchdata", fetchData)
+  port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("$PORT must be set")
+  }
+
+  port = ":" + port
+
+  if err := http.ListenAndServe(port, nil); err != nil {
     panic(err)
   }
-  // init()
+
 }
