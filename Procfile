@@ -1,1 +1,1 @@
-web: bin/API_data
+web: bin/API-data
