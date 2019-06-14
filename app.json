@@ -1,0 +1,10 @@
+{
+    "name": "Start on Heroku: Go",
+    "description": "API-data App",
+    "keywords": [
+        "API-data",
+        "go"
+    ],
+    "website": "https://github.com/muskankhedia/API-data",
+    "repository": "https://github.com/muskankhedia/API-data"
+}
