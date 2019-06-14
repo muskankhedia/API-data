@@ -1,1 +1,1 @@
-web: bin/API-data
+web: go run main.go

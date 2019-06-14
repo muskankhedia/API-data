@@ -5,6 +5,8 @@ import (
   "encoding/json"
   "github.com/extrame/xls"
   "fmt"
+  "os"
+  "log"
 )
 
 type xldata struct {
@@ -103,8 +105,19 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
 
 func main() {
   http.HandleFunc("/", fetchData)
-  if err := http.ListenAndServe(":8080", nil); err != nil {
+  // if err := http.ListenAndServe(":8080", nil); err != nil {
+  //   panic(err)
+  // }
+  // init()
+  port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+  }
+
+  port = ":" + port
+
+  if err := http.ListenAndServe(port, nil); err != nil {
     panic(err)
   }
-  // init()
 }
