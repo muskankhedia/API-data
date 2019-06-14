@@ -32,16 +32,15 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
   r.ParseForm()
 
   request := r.FormValue("commodity")
+  country := r.FormValue("country")
 
   fmt.Println(request)
   var Result xldata
   var ResultArray []xldata
 
-  if xlFile, err := xls.Open("./Table.xls", "utf-8"); err == nil {
+  if xlFile, err := xls.Open("./Table1.xls", "utf-8"); err == nil {
     fmt.Print("reached")
       if sheet1 := xlFile.GetSheet(0); sheet1 != nil {
-          fmt.Print("Total Lines ", sheet1.MaxRow, sheet1.Name)
-          // fmt.Print("Total Columns : ", sheet1.MaxColumn)
           for i := 1; i <= (int(sheet1.MaxRow)); i++ {
               row1 := sheet1.Row(i)
               Result.Markets = row1.Col(0)
@@ -49,7 +48,6 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
               Result.EffPrice = row1.Col(2)
               Result.Delta = row1.Col(3)
               Result.Expenses = row1.Col(4)
-              fmt.Print("\n", Result)
               ResultArray = append(ResultArray, Result)
           }
       }
@@ -69,14 +67,14 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
 			}
     jData, _ := json.Marshal(responseJSON)
     w.Write(jData)
-  } else if (strings.ToLower(request) == "united states of america" || strings.ToLower(request) == "australia" || strings.ToLower(request) == "canada" || strings.ToLower(request) == "germany" ||
-      strings.ToLower(request) == "qatar" || strings.ToLower(request) == "united kingdom" || strings.ToLower(request) == "netherlands"|| strings.ToLower(request) == "nigeria" ||
-      strings.ToLower(request) == "united arab emirates" || strings.ToLower(request) == "saudi arabia") {
+  } else if (strings.ToLower(country) == "united states of america" || strings.ToLower(country) == "australia" || strings.ToLower(country) == "canada" || strings.ToLower(country) == "germany" ||
+      strings.ToLower(country) == "qatar" || strings.ToLower(country) == "united kingdom" || strings.ToLower(country) == "netherlands"|| strings.ToLower(country) == "nigeria" ||
+      strings.ToLower(country) == "united arab emirates" || strings.ToLower(country) == "saudi arabia") {
 
         var response string
         for _, data:= range ResultArray {
-          if (strings.ToLower(data.Markets) == strings.ToLower(request)) {
-            response = "The selling price in "+ data.Markets + " is Rs. " + data.MarPrice + " /kg. The costs incured to complete export will be Rs. " + data.Expenses + " /kg. Effectively you will earn " + data.EffPrice + " /kg, which is " + data.Delta + "% higher than tha price in India (domestic Market)."
+          if (strings.ToLower(data.Markets) == strings.ToLower(country)) {
+            response = "The selling price in "+ data.Markets + " is Rs. " + data.MarPrice + "/kg. The costs incured to complete export will be Rs. " + data.Expenses + "/kg. Effectively you will earn " + data.EffPrice + "/kg, which is " + data.Delta + "% higher than tha price in India (domestic Market)."
             break;
           }
         }
