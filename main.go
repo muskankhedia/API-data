@@ -70,7 +70,7 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
 			}
     jData, _ := json.Marshal(responseJSON)
     w.Write(jData)
-  } else if (strings.ToLower(market) == "best" ) {
+  } else if (strings.ToLower(market) == "best market" ) {
     
     responseJSON := jsonResponse {
 				Message: "",
