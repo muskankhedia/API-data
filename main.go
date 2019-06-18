@@ -1,67 +1,134 @@
 package main
+
 import (
-  "net/http"
-  "strings"
-  "encoding/json"
-  "os"
-  "log"
+	"encoding/json"
+	"fmt"
+	"github.com/extrame/xls"
+	"log"
+	"net/http"
+	"os"
+	"strings"
 )
 
+type xldata struct {
+	Markets  string `json:"market"`
+	MarPrice string `json:"price"`
+	EffPrice string `json:"eff_price"`
+	Delta    string `json:"delta"`
+	Expenses string `json:"expense"`
+}
+
 type jsonResponseQuery struct {
-	Result []string `json:"result"`
+	Message string   `json:"message"`
+	Result  []string `json:"result"`
+}
+
+type jsonResponse struct {
+	Message string `json:"message"`
+	Result  string `json:"result"`
 }
 
 func fetchData(w http.ResponseWriter, r *http.Request) {
 
-  w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-  r.ParseForm()
+	r.ParseForm()
 
-  request := r.FormValue("commodity")
+	request := r.FormValue("commodity")
+	country := r.FormValue("country")
+	market := r.FormValue("market")
 
-  if (strings.ToLower(request) == "turmeric" ) {
+  fmt.Println(request)
+  fmt.Println(market)
+	var Result xldata
+	var ResultArray []xldata
 
-    response := []string {
-      "Here is best market for your product based on Income potential (on 14/06/2019)",
-      "USA (Market Price: Rs. 390.60/Kg, Effective Price: Rs. 366.74/Kg, Higher income by 423.92%)",
-      "The selling price in USA is Rs 390.60/Kg. The costs incurred to complete export will Rs. 23.86/Kg (Shipping and transportation Rs 12.14/Kg, Insurance Rs 7.21/Kg, Nudge Charges Rs. 15.62/Kg and Income of Rs 11.72/Kg as Govt subsidies).",
-      "Effectively you will earn Rs 366.74/Kg, which is 432.92% higher than the price of India's domestic market. Also check the following top 10 destinations for your product, in decreasing order of profitability.",
-      "1. United States of America (Market Price: Rs. 390.60/Kg, Effective Price: Rs. 366.74/Kg, Higher income by 423.92%)",
-      "2. Australia (Market Price: Rs. 210.77/Kg, Effective Price: Rs. 195.54/Kg, Higher income by 179.34%)",
-      "3. Canada (Market Price: Rs. 177.10/Kg, Effective Price: Rs. 157.07/Kg, Higher income by 124.39%)",
-      "4. Germany (Market Price: Rs. 157.71/Kg, Effective Price: Rs. 142.86/Kg, Higher income by 104.09%)",
-      "5. Qatar (Market Price: Rs. 157.92/Kg, Effective Price: Rs. 136.40/Kg, Higher income by 94.86%)",
-    } 
-    
-    responseJSON := jsonResponseQuery {
-				Result: response,
+	if xlFile, err := xls.Open("./Table1.xls", "utf-8"); err == nil {
+		fmt.Print("reached")
+		if sheet1 := xlFile.GetSheet(0); sheet1 != nil {
+			for i := 1; i <= (int(sheet1.MaxRow)); i++ {
+				row1 := sheet1.Row(i)
+				Result.Markets = row1.Col(0)
+				Result.MarPrice = row1.Col(1)
+				Result.EffPrice = row1.Col(2)
+				Result.Delta = row1.Col(3)
+				Result.Expenses = row1.Col(4)
+				ResultArray = append(ResultArray, Result)
 			}
-    jData, _ := json.Marshal(responseJSON)
-    w.Write(jData)
-  } else {
+		}
+	} else {
+		panic(err)
+	}
 
-      response := []string {"Please enter a valid query",}
-      responseJSON := jsonResponseQuery {
-                Result: response,
-            }
+	if strings.ToLower(request) == "turmeric" {
+		var response []string
+		for _, data := range ResultArray {
+			response = append(response, data.Markets)
+		}
 
-        jData, _ := json.Marshal(responseJSON)
-        w.Write(jData)
-    }
-} 
+		responseJSON := jsonResponseQuery{
+			Message: "Here are the top 10 options to export Turmeric, in decreasing of profits",
+			Result:  response,
+		}
+		jData, _ := json.Marshal(responseJSON)
+		w.Write(jData)
+	} else if strings.ToLower(market) == "best" {
+
+		responseJSON := jsonResponse{
+			Message: "",
+			Result:  "The selling price in USA is Rs 390.60/Kg. The costs incurred to complete export will Rs. 23.86/Kg (Shipping and transportation Rs 12.14/Kg, Insurance Rs 7.21/Kg, Nudge Charges Rs. 15.62/Kg and Income of Rs 11.72/Kg as Govt subsidies). Effectively you will earn Rs 366.74/Kg, which is 432.92% higher than the price of India's domestic market.",
+		}
+		jData, _ := json.Marshal(responseJSON)
+		w.Write(jData)
+	} else if strings.ToLower(country) == "united states of america" || strings.ToLower(country) == "australia" || strings.ToLower(country) == "canada" || strings.ToLower(country) == "germany" ||
+		strings.ToLower(country) == "qatar" || strings.ToLower(country) == "united kingdom" || strings.ToLower(country) == "netherlands" || strings.ToLower(country) == "nigeria" ||
+		strings.ToLower(country) == "united arab emirates" || strings.ToLower(country) == "saudi arabia" || strings.ToLower(country) == "usa" {
+
+		var response string
+		for _, data := range ResultArray {
+			if strings.ToLower(data.Markets) == strings.ToLower(country) {
+        Price := data.MarPrice
+        Expense := data.Expenses
+        EffPrice := data.EffPrice
+        Delta := data.Delta 
+				response = "The selling price in " + data.Markets + " is Rs. " + Price + "/kg. The costs incured to complete export will be Rs. " + Expense + "/kg. Effectively you will earn " + EffPrice + "/kg, which is " + Delta + "% higher than tha price in India (domestic Market)."
+				break
+			}
+		}
+
+		responseJSON := jsonResponse{
+			Message: "The Details are: ",
+			Result:  response,
+		}
+
+		jData, _ := json.Marshal(responseJSON)
+		w.Write(jData)
+	} else {
+
+		response := "Please enter a valid query"
+		responseJSON := jsonResponse{
+			Message: "Invalid Input",
+			Result:  response,
+		}
+
+		jData, _ := json.Marshal(responseJSON)
+		w.Write(jData)
+	}
+}
 
 func main() {
-
-  http.HandleFunc("/fetchdata", fetchData)
-  port := os.Getenv("PORT")
+	http.HandleFunc("/fetchdata", fetchData)
+	// if err := http.ListenAndServe(":8080", nil); err != nil {
+	//   panic(err)
+	// }
+	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")
-  }
+	}
 
-  port = ":" + port
+	port = ":" + port
 
-  if err := http.ListenAndServe(port, nil); err != nil {
-    panic(err)
-  }
-
+	if err := http.ListenAndServe(port, nil); err != nil {
+		panic(err)
+	}
 }
