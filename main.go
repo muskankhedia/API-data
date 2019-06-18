@@ -36,10 +36,12 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
 
 	request := r.FormValue("commodity")
 	country := r.FormValue("country")
-	market := r.FormValue("market")
+  market := r.FormValue("market")
+  LCountry := strings.ToLower(country)
 
   fmt.Println(request)
   fmt.Println(market)
+  fmt.Println(LCountry)
 	var Result xldata
 	var ResultArray []xldata
 
@@ -76,13 +78,12 @@ func fetchData(w http.ResponseWriter, r *http.Request) {
 
 		responseJSON := jsonResponse{
 			Message: "",
-			Result:  "The selling price in USA is Rs 390.60/Kg. The costs incurred to complete export will Rs. 23.86/Kg (Shipping and transportation Rs 12.14/Kg, Insurance Rs 7.21/Kg, Nudge Charges Rs. 15.62/Kg and Income of Rs 11.72/Kg as Govt subsidies). Effectively you will earn Rs 366.74/Kg, which is 432.92% higher than the price of India's domestic market.",
+			Result:"The selling price in USA is Rs 390.60/Kg. The costs incurred to complete export will Rs. 23.86/Kg (Shipping and transportation Rs 12.14/Kg, Insurance Rs 7.21/Kg, Nudge Charges Rs. 15.62/Kg and Income of Rs 11.72/Kg as Govt subsidies). Effectively you will earn Rs 366.74/Kg, which is 432.92% higher than the price of India's domestic market.",
 		}
 		jData, _ := json.Marshal(responseJSON)
 		w.Write(jData)
-	} else if strings.ToLower(country) == "united states of america" || strings.ToLower(country) == "australia" || strings.ToLower(country) == "canada" || strings.ToLower(country) == "germany" ||
-		strings.ToLower(country) == "qatar" || strings.ToLower(country) == "united kingdom" || strings.ToLower(country) == "netherlands" || strings.ToLower(country) == "nigeria" ||
-		strings.ToLower(country) == "united arab emirates" || strings.ToLower(country) == "saudi arabia" || strings.ToLower(country) == "usa" {
+	} else if strings.Contains("usa", LCountry) || strings.Contains("australia", LCountry) || strings.Contains("canada", LCountry) || strings.Contains("germany", LCountry) ||
+		strings.Contains("qatar", LCountry) {
 
 		var response string
 		for _, data := range ResultArray {
